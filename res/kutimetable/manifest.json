@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+  "name": "KUTimetable",
+  "version": "1.0",
+
+  "description": "",
+  "homepage_url": "https://yatabashi.github.io/",
+
+  "icons": {
+    "48": "icons/48-75x.png",
+    "96": "icons/96-75x.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://www.k.kyoto-u.ac.jp/student/*/entry/*"],
+      "js": ["main.js"]
+    }
+  ]
+}
