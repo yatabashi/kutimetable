@@ -13,7 +13,7 @@
 
   "content_scripts": [
     {
-      "matches": ["https://www.k.kyoto-u.ac.jp/student/*/entry/*"],
+      "matches": ["https://www.k.kyoto-u.ac.jp/student/*/entry/*", "https://www.k.kyoto-u.ac.jp/student/la/timeslot/timeslot_list"],
       "js": ["main.js"]
     }
   ]

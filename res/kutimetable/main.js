@@ -3,26 +3,38 @@
         * 未対応のブラウザあり
 */
 
+/* 
+科目名に関する注意：
+時間割ページで実行した場合と履修登録ページで実行した場合では科目名の表記が若干異なり、
+最も大きなものは全共／学部の表記の有無です。
+KULASISとPandAへのリンク機能に問題はありませんが、
+必要に応じて履修登録確定後にダウンロードし直してください。
+*/
+
+const isEntryPage = location.href.match(/entry/);
+if (!isEntryPage && !location.href.match(/timeslot/)) {
+    throw new Error("This addon is unavailable on this page.");
+}
+
+const selectedClasses = isEntryPage ? ".entry_other, .entry_interest, .entry_null" : ".timetable_reserved, .timetable_filled, .timetable_null"
+const nullClassName = isEntryPage ? "entry_null" : "timetable_null";
+const table = isEntryPage ? 
+    document.getElementsByClassName("entry_table")[0]
+  : Array.from(document.getElementsByTagName("table")).filter((elem) => {
+        return elem.width == "660" && elem.innerHTML.match(/th_normal x80/)
+    })[0];
+const widthOfTable = isEntryPage ? table.style.width : table.width;
+
 // 要素の埋め込み
-let entryTable = document.getElementsByClassName("entry_table")[0];
-
-let outer_insertion = document.createElement("div");
-outer_insertion.style.width = entryTable.style.width;
-entryTable.before(outer_insertion);
-
-// 時間割の中身が entry_table から 2px 内側に入っている（原因不明）のに合わせるためのハードコーディング
-outer_insertion.style.boxSizing = "border-box";
-outer_insertion.style.padding = "2px";
-
-let inner_insertion = document.createElement("div");
-inner_insertion.style.border = "1px solid #000";
-outer_insertion.appendChild(inner_insertion);
+let insertion = document.createElement("div");
+insertion.style.width = widthOfTable;
+table.before(insertion);
 
 let insBody = document.createElement("div");
 insBody.style.display = "flex";
 insBody.style.alignItems = "center";
 insBody.style.margin = "5px";
-inner_insertion.appendChild(insBody);
+insertion.appendChild(insBody);
 
 let insButton = document.createElement("button");
 insButton.textContent = "Download";
@@ -38,8 +50,9 @@ insBody.appendChild(progress);
 
 let description = document.createElement("p");
 description.innerText = "\"Download\"を押下すると、データの読み込みが終わり次第自動的にHTMLファイルがダウンロードされます。\nダウンロードされたファイルを開いたのち、必要に応じてブックマークに追加してください。"
+if (!isEntryPage) { description.innerText = description.innerText+"\n履修登録画面で実行する場合、複数の科目が選択されているコマからは一番上の科目が抽出されます。" }
 description.style.margin = "5px";
-inner_insertion.appendChild(description);
+insertion.appendChild(description);
 
 // ボタンの挙動
 async function saveHTML() {
@@ -52,15 +65,15 @@ async function saveHTML() {
     const stringToDOM = text => new DOMParser().parseFromString(text, "text/html");
 
     // 収集
-    const periods = document.querySelectorAll(".entry_other, .entry_interest, .entry_null");
+    const periods = document.querySelectorAll(selectedClasses);
 
     let n = 1;
     for (const period of periods) {
-        if (period.className == "entry_null") {
+        if (period.className == nullClassName) {
             timetable.push(null);
         } else {
             const atag = period.getElementsByTagName("a")[0];
-            const coursename = atag.text.trim();
+            const coursename = isEntryPage ? atag.text.trim() : atag.title.trim();
             const kulasislink = atag.href.replace(/&from=.*/, "");
             
             const response = await fetch(kulasislink);
