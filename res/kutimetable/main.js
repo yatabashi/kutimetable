@@ -16,12 +16,12 @@ if (!isEntryPage && !location.href.match(/timeslot/)) {
     throw new Error("This addon is unavailable on this page.");
 }
 
-const selectedClasses = isEntryPage ? ".entry_other, .entry_interest, .entry_null" : ".timetable_reserved, .timetable_filled, .timetable_null"
+const selectedClasses = isEntryPage ? ".entry_other, .entry_interest, .entry_null" : ".timetable_reserved, .timetable_filled, .timetable_null";
 const nullClassName = isEntryPage ? "entry_null" : "timetable_null";
 const table = isEntryPage ? 
     document.getElementsByClassName("entry_table")[0]
   : Array.from(document.getElementsByTagName("table")).filter((elem) => {
-        return elem.width == "660" && elem.innerHTML.match(/th_normal x80/)
+        return elem.width == "660" && elem.innerHTML.match(/th_normal x80/);
     })[0];
 const widthOfTable = isEntryPage ? table.style.width : table.width;
 
@@ -49,8 +49,10 @@ progress.style.marginLeft = "10px";
 insBody.appendChild(progress);
 
 let description = document.createElement("p");
-description.innerText = "\"Download\"を押下すると、データの読み込みが終わり次第自動的にHTMLファイルがダウンロードされます。\nダウンロードされたファイルを開いたのち、必要に応じてブックマークに追加してください。"
-if (!isEntryPage) { description.innerText = description.innerText+"\n履修登録画面で実行する場合、複数の科目が選択されているコマからは一番上の科目が抽出されます。" }
+description.innerText = "\"Download\"を押下すると、データの読み込みが終わり次第自動的にHTMLファイルがダウンロードされます。\nダウンロードされたファイルを開いたのち、必要に応じてブックマークに追加してください。";
+if (!isEntryPage) {
+    description.innerText = description.innerText+"\n履修登録画面で実行する場合、複数の科目が選択されているコマからは一番上の科目が抽出されます。"
+};
 description.style.margin = "5px";
 insertion.appendChild(description);
 
@@ -81,7 +83,7 @@ async function saveHTML() {
             const text = decoder.decode(binary);
             const atags = stringToDOM(text).getElementsByTagName("a");
             const pandalinktag = Array.from(atags).filter((elem) => {
-                return elem.textContent == "授業支援システム - PandA（情報環境機構）"
+                return elem.textContent == "授業支援システム - PandA（情報環境機構）";
             })[0];
             const pandalink = pandalinktag.href;
 
@@ -106,7 +108,16 @@ async function saveHTML() {
         }
     }
 
-    const selfURL = location.href.replace(/\?.*/, "");
+    const selfURL = (() => {
+        if (location.href == "https://www.k.kyoto-u.ac.jp/student/la/timeslot/timeslot_list") {
+            const entryURL = "https://www.k.kyoto-u.ac.jp/student/la/entry/";
+            const currentMonth = new Date().getMonth() + 1;
+            return (3 <= currentMonth && currentMonth < 9) ? entryURL+"zenki" : entryURL+"kouki";
+        } else {
+            return location.href.replace(/\?.*/, "");
+        }
+    })();
+
     const timetable_html = `<!DOCTYPE html>
 <html>
     <head>
@@ -178,10 +189,10 @@ async function saveHTML() {
     </body>
 </html>
 `;
-
+    
     /* downloadHTML */
     progress.textContent = "downloading...";
-
+    
     const blob = new Blob([timetable_html], {type: 'text/html'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -191,7 +202,7 @@ async function saveHTML() {
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
-
+    
     // 完了
     progress.textContent = "downloaded";
 }
