@@ -3,14 +3,6 @@
         * 未対応のブラウザあり
 */
 
-/* 
-科目名に関する注意：
-時間割ページで実行した場合と履修登録ページで実行した場合では科目名の表記が若干異なり、
-最も大きなものは全共／学部の表記の有無です。
-KULASISとPandAへのリンク機能に問題はありませんが、
-必要に応じて履修登録確定後にダウンロードし直してください。
-*/
-
 const isEntryPage = location.href.match(/entry/);
 if (!isEntryPage && !location.href.match(/timeslot/)) {
     throw new Error("This addon is unavailable on this page.");
@@ -18,11 +10,15 @@ if (!isEntryPage && !location.href.match(/timeslot/)) {
 
 const selectedClasses = isEntryPage ? ".entry_other, .entry_interest, .entry_null" : ".timetable_reserved, .timetable_filled, .timetable_null";
 const nullClassName = isEntryPage ? "entry_null" : "timetable_null";
-const table = isEntryPage ? 
-    document.getElementsByClassName("entry_table")[0]
-  : Array.from(document.getElementsByTagName("table")).filter((elem) => {
-        return elem.width == "660" && elem.innerHTML.match(/th_normal x80/);
-    })[0];
+const table = (() => {
+    if (isEntryPage) {
+        return document.getElementsByClassName("entry_table")[0]
+    } else {
+        return Array.from(document.getElementsByTagName("table")).filter((elem) => {
+            return elem.width == "660" && elem.innerHTML.match(/th_normal x80/);
+        })[0];
+    }
+})();
 const widthOfTable = isEntryPage ? table.style.width : table.width;
 
 // 要素の埋め込み
@@ -75,7 +71,16 @@ async function saveHTML() {
             timetable.push(null);
         } else {
             const atag = period.getElementsByTagName("a")[0];
-            const coursename = isEntryPage ? atag.text.trim() : atag.title.trim();
+
+            const coursename = (() => {
+                if (atag.hasAttribute("title")) {
+                    return atag.title.trim()
+                } else {
+                    const text = atag.text
+                    return text.substring(text.indexOf(":") + 1).trim()
+                }
+            })();
+            
             const kulasislink = atag.href.replace(/&from=.*/, "");
             
             const response = await fetch(kulasislink);
