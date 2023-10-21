@@ -96,17 +96,6 @@ async function saveHTML() {
     
     /* generateHTML */
     progress.textContent = "generating...";
-    
-    function td_content(period_number) {
-        const perioddata = timetable[period_number];
-        if (perioddata == null) {
-            return "";
-        } else {
-            const [coursename, kulasislink, pandalink] = perioddata;
-            
-            return `${coursename}<br><a href="${kulasislink}">KULASIS</a><br><a href="${pandalink}">PANDA</a>`;
-        }
-    }
 
     const selfURL = (() => {
         if (location.href == "https://www.k.kyoto-u.ac.jp/student/la/timeslot/timeslot_list") {
@@ -118,16 +107,43 @@ async function saveHTML() {
         }
     })();
 
+    function generateTdTag(periodNumber) {
+        const periodData = timetable[periodNumber];
+        if (periodData == null) {
+            return `<td class="null"></td>`;
+        } else {
+            const [coursename, kulasislink, pandalink] = periodData;
+            const content = `${coursename}<br><a href="${kulasislink}">KULASIS</a><br><a href="${pandalink}">PandA</a>`;
+
+            return `<td>${content}</td>`
+        }
+    }
+
     const timetable_html = `<!DOCTYPE html>
 <html>
     <head>
         <meta charset="utf-8">
         <title></title>
         <style>
-            td:not(.num) {
-                min-width: 125px;
+            table {
+                border-collapse: collapse;
             }
-        </style>
+            th, td {
+                padding: 5px;
+                border: solid 1px #000;
+            }
+            th:not(.num), td {
+                width: 12.5em;
+                vertical-align: top;
+            }
+            th.num {
+                max-width: 0.5em;
+                min-width: 0.5em;
+            }
+            td.null {
+                background-color: #CCC;
+            }
+    </style>
     </head>
     <body>
         <h1>ローカル時間割（${selfURL.endsWith("zenki") ? "前期" : "後期"}）</h1>
@@ -146,43 +162,43 @@ async function saveHTML() {
             <tbody>
                 <tr>
                     <th class="num">1</th>
-                    <td>${td_content(0)}</td>
-                    <td>${td_content(5)}</td>
-                    <td>${td_content(10)}</td>
-                    <td>${td_content(15)}</td>
-                    <td>${td_content(20)}</td>
+                    ${generateTdTag(0)}
+                    ${generateTdTag(5)}
+                    ${generateTdTag(10)}
+                    ${generateTdTag(15)}
+                    ${generateTdTag(20)}
                 </tr>
                 <tr>
                     <th class="num">2</th>
-                    <td>${td_content(1)}</td>
-                    <td>${td_content(6)}</td>
-                    <td>${td_content(11)}</td>
-                    <td>${td_content(16)}</td>
-                    <td>${td_content(21)}</td>
+                    ${generateTdTag(1)}
+                    ${generateTdTag(6)}
+                    ${generateTdTag(11)}
+                    ${generateTdTag(16)}
+                    ${generateTdTag(21)}
                 </tr>
                 <tr>
                     <th class="num">3</th>
-                    <td>${td_content(2)}</td>
-                    <td>${td_content(7)}</td>
-                    <td>${td_content(12)}</td>
-                    <td>${td_content(17)}</td>
-                    <td>${td_content(22)}</td>
+                    ${generateTdTag(2)}
+                    ${generateTdTag(7)}
+                    ${generateTdTag(12)}
+                    ${generateTdTag(17)}
+                    ${generateTdTag(22)}
                 </tr>
                 <tr>
                     <th class="num">4</th>
-                    <td>${td_content(3)}</td>
-                    <td>${td_content(8)}</td>
-                    <td>${td_content(13)}</td>
-                    <td>${td_content(18)}</td>
-                    <td>${td_content(23)}</td>
+                    ${generateTdTag(3)}
+                    ${generateTdTag(8)}
+                    ${generateTdTag(13)}
+                    ${generateTdTag(18)}
+                    ${generateTdTag(23)}
                 </tr>
                 <tr>
                     <th class="num">5</th>
-                    <td>${td_content(4)}</td>
-                    <td>${td_content(9)}</td>
-                    <td>${td_content(14)}</td>
-                    <td>${td_content(19)}</td>
-                    <td>${td_content(24)}</td>
+                    ${generateTdTag(4)}
+                    ${generateTdTag(9)}
+                    ${generateTdTag(14)}
+                    ${generateTdTag(19)}
+                    ${generateTdTag(24)}
                 </tr>
             </tbody>
         </table>
