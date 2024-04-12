@@ -123,6 +123,22 @@ async function saveHTML() {
             return `<td>${content}</td>`
         }
     }
+    
+    let periodToIndex = document.querySelector(".th_normal.x80").textContent == "1" ?
+        {
+            mo1: 0, tu1: 5, we1: 10, th1: 15, fr1: 20, 
+            mo2: 1, tu2: 6, we2: 11, th2: 16, fr2: 21, 
+            mo3: 2, tu3: 7, we3: 12, th3: 17, fr3: 22, 
+            mo4: 3, tu4: 8, we4: 13, th4: 18, fr4: 23, 
+            mo5: 4, tu5: 9, we5: 14, th5: 19, fr5: 24
+        } :
+        {
+            mo1: 0, tu1: 1, we1: 2, th1: 3, fr1: 4, 
+            mo2: 5, tu2: 6, we2: 7, th2: 8, fr2: 9, 
+            mo3: 10, tu3: 11, we3: 12, th3: 13, fr3: 14, 
+            mo4: 15, tu4: 16, we4: 17, th4: 18, fr4: 19, 
+            mo5: 20, tu5: 21, we5: 22, th5: 23, fr5: 24
+        }
 
     const timetable_html = `<!DOCTYPE html>
 <html>
@@ -167,43 +183,43 @@ async function saveHTML() {
             <tbody>
                 <tr>
                     <th class="num">1</th>
-                    ${generateTdTag(0)}
-                    ${generateTdTag(5)}
-                    ${generateTdTag(10)}
-                    ${generateTdTag(15)}
-                    ${generateTdTag(20)}
+                    ${generateTdTag(periodToIndex.mo1)}
+                    ${generateTdTag(periodToIndex.tu1)}
+                    ${generateTdTag(periodToIndex.we1)}
+                    ${generateTdTag(periodToIndex.th1)}
+                    ${generateTdTag(periodToIndex.fr1)}
                 </tr>
                 <tr>
                     <th class="num">2</th>
-                    ${generateTdTag(1)}
-                    ${generateTdTag(6)}
-                    ${generateTdTag(11)}
-                    ${generateTdTag(16)}
-                    ${generateTdTag(21)}
+                    ${generateTdTag(periodToIndex.mo2)}
+                    ${generateTdTag(periodToIndex.tu2)}
+                    ${generateTdTag(periodToIndex.we2)}
+                    ${generateTdTag(periodToIndex.th2)}
+                    ${generateTdTag(periodToIndex.fr2)}
                 </tr>
                 <tr>
                     <th class="num">3</th>
-                    ${generateTdTag(2)}
-                    ${generateTdTag(7)}
-                    ${generateTdTag(12)}
-                    ${generateTdTag(17)}
-                    ${generateTdTag(22)}
+                    ${generateTdTag(periodToIndex.mo3)}
+                    ${generateTdTag(periodToIndex.tu3)}
+                    ${generateTdTag(periodToIndex.we3)}
+                    ${generateTdTag(periodToIndex.th3)}
+                    ${generateTdTag(periodToIndex.fr3)}
                 </tr>
                 <tr>
                     <th class="num">4</th>
-                    ${generateTdTag(3)}
-                    ${generateTdTag(8)}
-                    ${generateTdTag(13)}
-                    ${generateTdTag(18)}
-                    ${generateTdTag(23)}
+                    ${generateTdTag(periodToIndex.mo4)}
+                    ${generateTdTag(periodToIndex.tu4)}
+                    ${generateTdTag(periodToIndex.we4)}
+                    ${generateTdTag(periodToIndex.th4)}
+                    ${generateTdTag(periodToIndex.fr4)}
                 </tr>
                 <tr>
                     <th class="num">5</th>
-                    ${generateTdTag(4)}
-                    ${generateTdTag(9)}
-                    ${generateTdTag(14)}
-                    ${generateTdTag(19)}
-                    ${generateTdTag(24)}
+                    ${generateTdTag(periodToIndex.mo5)}
+                    ${generateTdTag(periodToIndex.tu5)}
+                    ${generateTdTag(periodToIndex.we5)}
+                    ${generateTdTag(periodToIndex.th5)}
+                    ${generateTdTag(periodToIndex.fr5)}
                 </tr>
             </tbody>
         </table>
