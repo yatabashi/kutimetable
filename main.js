@@ -75,7 +75,7 @@ async function saveHTML() {
 
             const coursename = (() => {
                 const text = atag.text;
-                faculty = atag.text.slice(0, atag.text.indexOf(":"));
+                faculty = atag.text.slice(0, atag.text.indexOf(":")).trim();
                 return text.slice(text.indexOf(":") + 1).trim()
             })();
             
