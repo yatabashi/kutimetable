@@ -71,14 +71,12 @@ async function saveHTML() {
             timetable.push(null);
         } else {
             const atag = period.getElementsByTagName("a")[0];
+            let faculty;
 
             const coursename = (() => {
-                if (atag.hasAttribute("title")) {
-                    return atag.title.trim()
-                } else {
-                    const text = atag.text
-                    return text.substring(text.indexOf(":") + 1).trim()
-                }
+                const text = atag.text;
+                faculty = atag.text.slice(0, atag.text.indexOf(":"));
+                return text.slice(text.indexOf(":") + 1).trim()
             })();
             
             const kulasislink = atag.href.replace(/&from=.*/, "");
@@ -86,13 +84,24 @@ async function saveHTML() {
             const response = await fetch(kulasislink);
             const binary = await response.arrayBuffer();
             const text = decoder.decode(binary);
-            const atags = stringToDOM(text).getElementsByTagName("a");
-            const pandalinktag = Array.from(atags).filter((elem) => {
-                return elem.textContent == "授業支援システム - PandA（情報環境機構）";
-            })[0];
+            const kulasisPage = stringToDOM(text);
+            const atags = kulasisPage.getElementsByTagName("a");
+            const pandalinktag = Array.from(atags).find((elem) => elem.textContent == "授業支援システム - PandA（情報環境機構）");
             const pandalink = pandalinktag.href;
 
-            timetable.push([coursename, kulasislink, pandalink]);
+            let subject;
+            if (faculty == "文") {
+                const sylAtags = kulasisPage.getElementsByTagName("a");
+                const sylLinkTag = Array.from(sylAtags).find((e) => e.id == "id_a_414_0");
+                const sylLink = kulasislink.match(/.*\//) + sylLinkTag.href.match(/[^\/]*$/);
+                const sylResponse = await fetch(sylLink);
+                const sylBinary = await sylResponse.arrayBuffer();
+                const sylText = decoder.decode(sylBinary);
+                const subheadings = stringToDOM(sylText).getElementsByClassName("lesson_plan_subheading");
+                subject = Array.from(subheadings).find((elem) => elem.textContent == "(題目)").parentElement.children[1].textContent.trim();
+            }
+
+            timetable.push([coursename, kulasislink, pandalink, subject]);
         }
 
         progress.textContent = `loading... ${n}/25`;
@@ -117,14 +126,17 @@ async function saveHTML() {
         if (periodData == null) {
             return `<td class="null"></td>`;
         } else {
-            const [coursename, kulasislink, pandalink] = periodData;
-            const content = `${coursename}<br><a href="${kulasislink}">KULASIS</a><br><a href="${pandalink}">PandA</a>`;
+            const [coursename, kulasislink, pandalink, subject] = periodData;
+            const content = `<span title="${coursename}">${coursename}</span>` +
+                            (subject ? `<br><span class="note">${subject}</span>` : "") + 
+                            `<br><a href="${kulasislink}" target="_blank">KULASIS</a>` + 
+                            `<br><a href="${pandalink}" target="_blank">PandA</a>`;
 
             return `<td>${content}</td>`
         }
     }
     
-    let periodToIndex = document.querySelector(".th_normal.x80").textContent == "1" ?
+    let periodToIndex = document.querySelector(".th_normal").textContent == "1" ?
         {
             mo1: 0, tu1: 5, we1: 10, th1: 15, fr1: 20, 
             mo2: 1, tu2: 6, we2: 11, th2: 16, fr2: 21, 
@@ -149,20 +161,40 @@ async function saveHTML() {
             table {
                 border-collapse: collapse;
             }
+
             th, td {
                 padding: 5px;
                 border: solid 1px #000;
             }
+
             th:not(.num), td {
-                width: 12.5em;
+                width: 12em;
+                min-width: 12em;
+                max-width: 12em;
                 vertical-align: top;
             }
             th.num {
-                max-width: 0.5em;
-                min-width: 0.5em;
+                width: 1em;
+                min-width: 1em;
+                max-width: 1em;
+            }
+
+            td {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             td.null {
                 background-color: #CCC;
+            }
+
+            .note {
+                font-size: smaller;
+                color: gray;
+            }
+            
+            .now {
+                background-color: #d0e0ff;
             }
     </style>
     </head>
@@ -181,6 +213,7 @@ async function saveHTML() {
                 </tr>
             </thead>
             <tbody>
+                <!--  - <a class="note" href="" target="_blank"></a> --->
                 <tr>
                     <th class="num">1</th>
                     ${generateTdTag(periodToIndex.mo1)}
@@ -224,6 +257,45 @@ async function saveHTML() {
             </tbody>
         </table>
     </body>
+    <script>
+        let date = new Date()
+        let day = date.getDay();
+        
+        if ([1, 2, 3, 4, 5].includes(day)) {
+            let headRow = document.querySelector('thead').firstElementChild;
+            headRow.children[day].classList.add('now');
+            
+            let hr = date.getHours();
+            let mn = date.getMinutes();
+            let t = hr*60 + mn;
+            
+            // 08:30 – 10:15
+            // 10:15 – 12:00
+            // 13:00 – 14:45
+            // 14:45 – 16:30
+            // 16:45 – 18:15
+            
+            let coma = (() => {
+                if (510 <= t) {  // 08:30 —
+                    if (t < 615) {  // – 10:15
+                        return 0;
+                    } else if (t < 720) {  // – 12:00
+                        return 1;
+                    } else if (t < 885) {  // – 14:45
+                        return 2;
+                    } else if (t < 990) {  // – 16:30
+                        return 3;
+                    } else if (t < 1095) {  // – 18:15
+                        return 4;
+                    }
+                }
+            })();
+            
+            let bodyRow = document.querySelector('tbody').children[coma];
+            bodyRow.children[0].classList.add('now');
+            bodyRow.children[day].classList.add('now');
+        }
+    </script>
 </html>
 `;
     
